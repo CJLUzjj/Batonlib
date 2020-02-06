@@ -38,17 +38,7 @@ struct time_item
     co_epoll_item* item;
     bool isremove;
 
-    time_item(unsigned long long ex_t, timeout_func func, void* func_arg)
-    {
-        next = NULL;
-        prev = NULL;
-        t_link = NULL;
-        ExpireTime = ex_t;
-        process = func;
-        arg = func_arg;
-        item = NULL;
-        isremove = false;
-    }
+    time_item(unsigned long long ex_t, timeout_func func, void* func_arg);
 };
 
 

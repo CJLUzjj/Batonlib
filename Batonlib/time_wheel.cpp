@@ -3,6 +3,18 @@
 #include "base/Logging.h"
 #include <iostream>
 
+time_item::time_item(unsigned long long ex_t, timeout_func func, void* func_arg)
+{
+    next = NULL;
+    prev = NULL;
+    t_link = NULL;
+    ExpireTime = ex_t;
+    process = func;
+    arg = func_arg;
+    item = NULL;
+    isremove = false;
+}
+
 time_wheel::time_wheel(int w_size, bool isms)
     :w_size_(w_size),
      w_start_(GetNowTimeMs()),

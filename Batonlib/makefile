@@ -1,14 +1,49 @@
-OBJS = time_wheel.o tool.o co_context.o co_epoll.o co_stack.o coroutine.o scheduler.o context_swap.o co_sys_call.o
+all:chat.test cond.test echo_conn.test coroutine.test echo.test time.test
+
+OBJS = time_wheel.o tool.o co_context.o co_epoll.o co_stack.o coroutine.o scheduler.o context_swap.o co_sys_call.o co_condition.o
 BASEOBJS = Mutex.o Condition.o CountDownLatch.o Thread.o ThreadPool.o CurrentThread.o AppendFile.o AsyncLogging.o LogFile.o Logging.o LogStream.o
-TEST_O = Zsingle_thread_test.o
-TEST_CPP = Zsingle_thread_test.cpp
+NETOBJS = connection.o server.o
+TEST_O = Zchat_test.o
+TEST_CPP = Zchat_test.cpp
 GPP = g++ -std=c++11 -g -c
 
-server : $(TEST_O) $(BASEOBJS) $(OBJS)
-		g++ -lpthread $(TEST_O) $(BASEOBJS) $(OBJS) -o server
+chat.test : Zchat_test.o $(BASEOBJS) $(OBJS) $(NETOBJS)
+		g++ -lpthread Zchat_test.o $(BASEOBJS) $(OBJS) $(NETOBJS) -o chat.test
 
-$(TEST_O) : $(TEST_CPP)
-		$(GPP) $(TEST_CPP)
+cond.test : Zcond_test.o $(BASEOBJS) $(OBJS) $(NETOBJS)
+		g++ -lpthread Zcond_test.o $(BASEOBJS) $(OBJS) $(NETOBJS) -o cond.test
+
+echo_conn.test : Zconn_echo_test.o $(BASEOBJS) $(OBJS) $(NETOBJS)
+		g++ -lpthread Zconn_echo_test.o $(BASEOBJS) $(OBJS) $(NETOBJS) -o echo_conn.test
+
+coroutine.test : Zcoroutine_test.o $(BASEOBJS) $(OBJS) $(NETOBJS)
+		g++ -lpthread Zcoroutine_test.o $(BASEOBJS) $(OBJS) $(NETOBJS) -o coroutine.test
+
+echo.test : Zecho_test.o $(BASEOBJS) $(OBJS) $(NETOBJS)
+		g++ -lpthread Zecho_test.o $(BASEOBJS) $(OBJS) $(NETOBJS) -o echo.test
+
+time.test : Ztime_test.o $(BASEOBJS) $(OBJS) $(NETOBJS)
+		g++ -lpthread Ztime_test.o $(BASEOBJS) $(OBJS) $(NETOBJS) -o time.test
+
+Zchat_test.o : Zchat_test.cpp
+		$(GPP) Zchat_test.cpp
+
+Zcond_test.o : Zcond_test.cpp
+		$(GPP) Zcond_test.cpp
+
+Zconn_echo_test.o : Zconn_echo_test.cpp
+		$(GPP) Zconn_echo_test.cpp
+
+Zcoroutine_test.o : Zcoroutine_test.cpp
+		$(GPP) Zcoroutine_test.cpp
+
+Zecho_test.o : Zecho_test.cpp
+		$(GPP) Zecho_test.cpp
+
+Ztime_test.o : Ztime_test.cpp
+		$(GPP) Ztime_test.cpp
+
+
 
 time_wheel.o : time_wheel.cpp
 		$(GPP) time_wheel.cpp
@@ -37,6 +72,16 @@ scheduler.o : scheduler.cpp
 co_sys_call.o : co_sys_call.cpp
 		$(GPP) co_sys_call.cpp
 
+co_condition.o : co_condition.cpp
+		$(GPP) co_condition.cpp
+
+
+
+connection.o : net/connection.cpp
+		$(GPP) net/connection.cpp
+
+server.o : net/server.cpp
+		$(GPP) net/server.cpp
 
 
 Mutex.o : base/Mutex.cpp
@@ -73,4 +118,4 @@ LogStream.o : base/LogStream.cpp
 	$(GPP) base/LogStream.cpp
 
 clean:
-		rm -rf *.o server
+		rm -rf *.o *.test *.log

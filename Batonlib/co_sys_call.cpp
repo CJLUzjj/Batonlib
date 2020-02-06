@@ -106,7 +106,7 @@ ssize_t co_write(int fd, const void* buf, size_t nbyte)
 
     ssize_t write_ret = write(fd, (const char*)buf + write_size, nbyte - write_size);
 
-    if(write_ret == 0){
+    if(write_ret <= 0){
         return write_ret;
     }
 

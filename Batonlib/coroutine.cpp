@@ -1,6 +1,7 @@
 #include "coroutine.h"
 #include "co_stack.h"
 #include "scheduler.h"
+#include "net/connection.h"
 #include <iostream>
 
 extern "C"
@@ -45,7 +46,8 @@ coroutine::coroutine(scheduler* sch, int stack_size, coroutine_func func, void* 
     ismain_(0),
     cst_(new co_stack(stack_size)),
     save_size_(0),
-    save_buf_(NULL)
+    save_buf_(NULL),
+    conn_(NULL)
 {
     ctx_.s_size = stack_size;
     ctx_.s_sp = cst_->stack_sp_;
@@ -55,6 +57,8 @@ coroutine::coroutine(scheduler* sch, int stack_size, coroutine_func func, void* 
 coroutine::~coroutine()
 {
     delete cst_;
+    if(conn_)
+        delete conn_;
 }
 
 //这里有一个疑问，就是如果resume的是另一个线程的协程，会产生什么情况？
@@ -90,6 +94,11 @@ void coroutine::swap(coroutine* co1)
 {
     //如果是每个协程一个栈的话，就不需要保存栈的内容
     context_swap(&this->ctx_, &co1->ctx_);
+}
+
+void coroutine::setconn(connection* conn)
+{
+    conn_ = conn;
 }
 
 coroutine* coroutine::get_curr_co()

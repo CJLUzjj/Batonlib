@@ -120,9 +120,6 @@ void scheduler::event_loop(eventloopfunc func, void* arg)
         time_link* active = sch_epoll_->active_link_;
         time_link* timeout = sch_epoll_->timeout_link_;
 
-        active->head = NULL;
-        active->tail = NULL;
-
         //处理active事件
         //LOG<<"add active event";
         for(int i = 0; i < ret; i++){

@@ -8,6 +8,7 @@ typedef void*(*coroutine_func)(void*);
 
 class co_stack;
 class scheduler;
+class connection;
 
 class coroutine
 {
@@ -29,6 +30,8 @@ public:
     unsigned int save_size_;
     char* save_buf_;//协程挂起时，栈内容存储的位置
 
+    connection* conn_;
+
 public:
     coroutine(scheduler* sch);
 
@@ -41,6 +44,8 @@ public:
     static coroutine* get_curr_co();
 
     void swap(coroutine*);
+
+    void setconn(connection*);
 };
 
 static int co_func_wrapper(coroutine* co, void*);
