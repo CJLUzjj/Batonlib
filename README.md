@@ -57,14 +57,14 @@ int main()
 {
     scheduler sch;
     server ser("0.0.0.0", 9981);
-    ser.setConnectedCallBack(connected);
+    ser.setConnectedCB(connected);
     ser.setReceiveCb(receive);
     ser.setDisconnectedCb(disconnected);
     ser.start();
     sch.event_loop(NULL, NULL);
 }
 ```
-
+当然也可以不使用网络库，享受用同步逻辑写异步逻辑的便利。
 ## Todo
 
 1. 对于多线程的支持。
