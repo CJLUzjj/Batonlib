@@ -64,7 +64,7 @@ int main()
     sch.event_loop(NULL, NULL);
 }
 ```
-当然也可以不使用网络库，利用提供的封装的系统调用，通过协程享受用同步逻辑写异步逻辑的便利。
+当然也可以不使用网络库，利用提供的封装的系统调用，通过协程提供用同步逻辑写异步逻辑的便利。
 ```
 #include "co_sys_call.h"
 #include "scheduler.h"
