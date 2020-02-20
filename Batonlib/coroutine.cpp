@@ -64,8 +64,6 @@ coroutine::~coroutine()
 //这里有一个疑问，就是如果resume的是另一个线程的协程，会产生什么情况？
 void coroutine::resume()
 {
-    if(end_)
-        return;
     scheduler* sch = sch_;
 
     coroutine* co1 = sch->co_call_stack_.top();//当前协程

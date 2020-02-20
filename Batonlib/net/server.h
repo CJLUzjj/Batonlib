@@ -29,7 +29,7 @@ public:
     void init();
     void run();
 
-    void setConnectedCallBack(ConnectedCb cb)
+    void setConnectedCb(ConnectedCb cb)
     {
         ConnectedCb_ = cb;
     }

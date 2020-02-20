@@ -1,4 +1,4 @@
-all:chat.test cond.test echo_conn.test coroutine.test echo.test time.test
+all:chat.test cond.test echo_conn.test coroutine.test echo.test time.test co_chat.test
 
 OBJS = time_wheel.o tool.o co_context.o co_epoll.o co_stack.o coroutine.o scheduler.o context_swap.o co_sys_call.o co_condition.o
 BASEOBJS = Mutex.o Condition.o CountDownLatch.o Thread.o ThreadPool.o CurrentThread.o AppendFile.o AsyncLogging.o LogFile.o Logging.o LogStream.o
@@ -6,6 +6,9 @@ NETOBJS = connection.o server.o
 TEST_O = Zchat_test.o
 TEST_CPP = Zchat_test.cpp
 GPP = g++ -std=c++11 -g -c
+
+co_chat.test : Zco_chat_test.o $(BASEOBJS) $(OBJS) $(NETOBJS)
+		g++ -lpthread Zco_chat_test.o $(BASEOBJS) $(OBJS) $(NETOBJS) -o co_chat.test
 
 chat.test : Zchat_test.o $(BASEOBJS) $(OBJS) $(NETOBJS)
 		g++ -lpthread Zchat_test.o $(BASEOBJS) $(OBJS) $(NETOBJS) -o chat.test
@@ -24,6 +27,9 @@ echo.test : Zecho_test.o $(BASEOBJS) $(OBJS) $(NETOBJS)
 
 time.test : Ztime_test.o $(BASEOBJS) $(OBJS) $(NETOBJS)
 		g++ -lpthread Ztime_test.o $(BASEOBJS) $(OBJS) $(NETOBJS) -o time.test
+
+Zco_chat_test.o : Zco_chat_test.cpp
+		$(GPP) Zco_chat_test.cpp
 
 Zchat_test.o : Zchat_test.cpp
 		$(GPP) Zchat_test.cpp

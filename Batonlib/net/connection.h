@@ -36,7 +36,7 @@ public:
     void set_read_timeout(int ms);
     void set_write_timeout(int ms);
 
-    void setConnectedCallBack(ConnectedCb cb)
+    void setConnectedCb(ConnectedCb cb)
     {
         ConnectedCb_ = cb;
     }

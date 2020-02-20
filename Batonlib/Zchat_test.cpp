@@ -101,7 +101,7 @@ int main()
     scheduler sch;
     server ser("0.0.0.0", 9981);
     chat_server chat_ser(5);
-    ser.setConnectedCallBack(bind(&chat_server::connected, &chat_ser, placeholders::_1));
+    ser.setConnectedCb(bind(&chat_server::connected, &chat_ser, placeholders::_1));
     ser.setReceiveCb(bind(&chat_server::receive, &chat_ser, placeholders::_1, placeholders::_2, placeholders::_3));
     ser.setDisconnectedCb(bind(&chat_server::disconnected, &chat_ser, placeholders::_1));
     ser.start();

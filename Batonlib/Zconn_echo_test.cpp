@@ -26,7 +26,7 @@ int main()
 {
     scheduler sch;
     server ser("0.0.0.0", 9981);
-    ser.setConnectedCallBack(connected);
+    ser.setConnectedCb(connected);
     ser.setReceiveCb(receive);
     ser.setDisconnectedCb(disconnected);
     ser.start();

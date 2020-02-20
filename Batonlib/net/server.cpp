@@ -54,7 +54,7 @@ void server::run()
         connection* conn = new connection(client_fd, sch_);
         coroutine* co = new coroutine(sch_, 1024*1024, conn_func, conn);
         conn->setcoroutine(co);
-        conn->setConnectedCallBack(ConnectedCb_);
+        conn->setConnectedCb(ConnectedCb_);
         conn->setDisconnectedCb(DisconnectedCb_);
         conn->setReceiveCb(ReceiveCb_);
         LOG<<"resume"<<co;
