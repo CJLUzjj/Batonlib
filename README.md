@@ -328,12 +328,12 @@ Log的实现了学习了muduo，Log的实现分为前端和后端，前端往后
 
 Channel的设计来自于Golang，利用Channel来实现协程间通信，实现两个协程间的解耦。
 
-[Zchat_test.cpp][./Batonlib/Zchat_test.cpp]是利用封装的网络库来实现的聊天室，展示了不使用Channel进行的通信，这个测试用例直接跨协程读写另一个协程所持有的资源的问题在于：如果协程A跨协程B执行时出现了阻塞，调度器会yield当前协程A，等待条件的满足再resume，如果此时所跨的协程执行结束释放了资源了，那么resume协程A的条件将永远得不到满足，协程A将卡死。
+[Zchat_test.cpp](./Batonlib/Zchat_test.cpp)是利用封装的网络库来实现的聊天室，展示了不使用Channel进行的通信，这个测试用例直接跨协程读写另一个协程所持有的资源的问题在于：如果协程A跨协程B执行时出现了阻塞，调度器会yield当前协程A，等待条件的满足再resume，如果此时所跨的协程执行结束释放了资源了，那么resume协程A的条件将永远得不到满足，协程A将卡死。
 
 上述只是其中一种情况，当然跨协程还会出现非常多意想不到的情况，为了实现并发时的通讯，引入了co_condition和channel，利用通讯来共享内存，而不是通过共享内存来通讯。
 
 Channel是一个生产者消费者队列，里面封装了co_condition来实现同步问题，协程间可以通过channel来实现通讯，调度器会在条件不满足时yield掉协程，等条件满足时再resume，所以开发者不需要担心阻塞问题。
 
-[Zco_chat_test.cpp][./Batonlib/Zco_chat_test.cpp]是一个利用Channel来实现的聊天室。起初创建两个协程，一个channel叫message。协程A每接收一个新连接就创建两个协程来管理一个连接，协程B负责广播收到的消息。协程A所创建的协程C和协程D一个负责接收用户信息发给协程B，一个负责接收协程B广播的消息发送消息给用户。
+[Zco_chat_test.cpp](./Batonlib/Zco_chat_test.cpp)是一个利用Channel来实现的聊天室。起初创建两个协程，一个channel叫message。协程A每接收一个新连接就创建两个协程来管理一个连接，协程B负责广播收到的消息。协程A所创建的协程C和协程D一个负责接收用户信息发给协程B，一个负责接收协程B广播的消息发送消息给用户。
 
 遗憾的是，channel的使用远没有这么简单，channel的生命周期需要非常细心的照顾。这个问题主要来自于有多个协程持有channel而你并不知道是否有协程yield在channel上。释放channel前需要将所有yield在channel的协程全部resume，同时让他们不再关注这个channel，让最后一个持有channel的协程去释放掉他。这其实有点对应于Golang中优雅关闭Channel的问题，只不过Golang并不需要显式的关闭Channel，而C++需要管理内存。（或许可以试着用智能指针来管理）
