@@ -3,6 +3,7 @@
 #include "tool.h"
 #include "base/Logging.h"
 #include "channel.h"
+#include <memory>
 #include <string>
 #include <map>
 using namespace std;
@@ -10,25 +11,29 @@ using namespace std;
 struct client{
     int fd;
     string name;
-    co_condition* cond;
     channel<string> msg;
     bool end;
-    //channel<bool> hasmsg;
+    ~client()
+    {
+        cout<<"user"<<name<<" delete"<<endl;
+    }
 };
+
+typedef shared_ptr<client> clientptr;
 
 channel<string>* message;
 
-vector<client*> online_clients;
+vector<clientptr> online_clients;
 
 void* user_read(void* arg)
 {
-    client* cli = (client*)arg;
+    clientptr cli = *(clientptr*)arg;
     char buf[1024];
     while(1){
         memset(buf, 0, 1024);
         int len = co_read(cli->fd, buf, 1024);
         if(len > 0)
-            cout<<"read:"<<buf<<endl;
+            cout<<"user"<<cli->name<<" read:"<<buf<<endl;
 
         if(len <= 0){
             if(len != TIME_OUT){
@@ -37,7 +42,6 @@ void* user_read(void* arg)
                 if(errno == EINTR)
                     continue;
             }
-            cout<<"close1"<<endl;
             co_close(cli->fd);
             int index = atoi(cli->name.c_str());
             online_clients[index]->msg.close();
@@ -53,8 +57,7 @@ void* user_read(void* arg)
 void* handle_conn(void* arg)
 {
     int fd = *((int*)arg);
-    client* cli = new client;
-    cli->cond = new co_condition();
+    clientptr cli = make_shared<client>();
     cli->end = false;
     int flag = false;
     int id;
@@ -76,24 +79,14 @@ void* handle_conn(void* arg)
     if(!message->put(login))
         return NULL;
 
-    coroutine* co = new coroutine(scheduler::get_curr_thr_sch(), 1024*1024, user_read, cli);
+    coroutine* co = new coroutine(scheduler::get_curr_thr_sch(), 1024*1024, user_read, &cli);
     co->resume();
 
     while(1){
-        //这里有问题，这个协程大部分事件都阻塞在get上，那么isyield一直为true无法释放掉client
         string msg;
         if(!cli->msg.get(msg)){
-            if(cli->end){
-                cout<<"close4"<<endl;
-                delete cli->cond;
-                delete cli;
-            }else{
-                cout<<"close2"<<endl;
-                cli->end = true;
-            }
             break;
         }
-        cout<<"write:"<<msg<<endl;
         msg += "\n";
         int ret = co_write(fd, msg.c_str(), msg.size());
     }
@@ -107,20 +100,10 @@ void* manager(void*)
             break;
         for(int i = 0; i < online_clients.size(); i++){
             if(online_clients[i]){
-                if(!online_clients[i]->msg.put(msg)){
-                    if(online_clients[i]->end){
-                        cout<<"close3"<<endl;
-                        delete online_clients[i]->cond;
-                        delete online_clients[i];
-                        online_clients[i] = NULL;
-                        continue;
-                    }
-                    cout<<"close4"<<endl;
-                    online_clients[i]->end = true;
+                if(!online_clients[i]->msg.put("user"+online_clients[i]->name+" say:"+msg)){
                     online_clients[i] = NULL;
                     continue;
                 }
-                cout<<"put:"<<msg<<endl;
             }
         }
     }
@@ -140,18 +123,14 @@ void* accept_func(void* arg)
             int ret = bind(fd, (struct sockaddr*)&addr, sizeof(addr));
             if(ret != 0){
                 co_close(fd);
-                LOG<<"bind error";
                 abort();
             }
         }
     }
-    LOG<<"bind";
     listen(fd, 1024);
 
     coroutine* manager_co = new coroutine(scheduler::get_curr_thr_sch(), 1024*1024, manager, NULL);
     manager_co->resume();
-
-    LOG<<"accept coroutine";
 
     while(1){
         struct sockaddr_in addr;
@@ -165,8 +144,6 @@ void* accept_func(void* arg)
         }
 
         coroutine* co = new coroutine(scheduler::get_curr_thr_sch(),1024*1024, handle_conn, (void*)&client_fd);
-        //LOG<<"resume "<<(long)co;
-        LOG<<"resume "<<co;
         co->resume();
     }
 }
