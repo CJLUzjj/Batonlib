@@ -33,4 +33,5 @@ private:
 	static std::string LogFileName_;
 };
 
-#define LOG Logging(__FILE__,__LINE__).stream()
+//#define LOG Logging(__FILE__,__LINE__).stream()
+#define LOG std::cout

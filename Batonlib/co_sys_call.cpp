@@ -104,6 +104,8 @@ ssize_t co_write(int fd, const void* buf, size_t nbyte)
     int timeout = inf->write_timeout.tv_sec*1000
                 + inf->write_timeout.tv_usec/1000;
 
+    //cout<<"write:"<<endl<<buf<<endl;
+
     ssize_t write_ret = write(fd, (const char*)buf + write_size, nbyte - write_size);
 
     if(write_ret <= 0){

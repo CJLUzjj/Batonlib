@@ -94,13 +94,14 @@ int scheduler::register_event(int fd, __int32_t events, int timeout)
     }
 
     //LOG<<"yield "<<(long)co;
-    LOG<<"yield "<<co;
+    //LOG<<"yield "<<co;
     co->yield();
 
     //resume回来了释放资源
     //if(!t_item->isremove)
         //tw_->removeitem(t_item);
-    sch_epoll_->del(fd);
+    if(fd > -1)
+        sch_epoll_->del(fd);
     
     bool istimeout = item->is_timeout;
 
@@ -113,9 +114,9 @@ int scheduler::register_event(int fd, __int32_t events, int timeout)
 void scheduler::event_loop(eventloopfunc func, void* arg)
 {
     while(1){
-        LOG<<"loop";
-        int ret = sch_epoll_->poll(1000);
-        LOG<<"epoll return, num = "<<ret;
+        //LOG<<"loop";
+        int ret = sch_epoll_->poll(1);
+        //LOG<<"epoll return, num = "<<ret;
 
         time_link* active = sch_epoll_->active_link_;
         time_link* timeout = sch_epoll_->timeout_link_;
@@ -139,7 +140,7 @@ void scheduler::event_loop(eventloopfunc func, void* arg)
             //cout<<"add active link"<<endl;
             if(t_item->t_link){
                 //cout<<"add active error"<<endl;
-                LOG<<"add active error";
+                //LOG<<"add active error";
                 return;
             }
             if(active->tail){
@@ -207,7 +208,7 @@ void scheduler::event_loop(eventloopfunc func, void* arg)
             //resume
             coroutine* co = ti->item->co;
             //LOG<<"resume "<<(long)co;
-            LOG<<"resume "<<co;
+            //LOG<<"resume "<<co;
             co->resume();
             ti = active->head;
         }

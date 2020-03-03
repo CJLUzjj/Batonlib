@@ -45,7 +45,20 @@ int main()
     task* t = new task;
     t->cond = new co_condition();
 
-    coroutine* consumer = new coroutine(sch, 1024*1024, Consumer, t);
+    coroutine* consumer = new coroutine(sch, 1024*1024, [](void* arg) ->void*{
+        task* t = (task*)arg;
+
+        while(1){
+            if(t->task_queue.empty()){
+                t->cond->co_cond_wait();
+                continue;
+            }
+            int val = t->task_queue.front();
+            t->task_queue.pop();
+            cout<<"consumer get task:"<<val<<endl;
+        }
+        return NULL;
+    }, t);
     consumer->resume();
 
     coroutine* producer = new coroutine(sch, 1024*1024, Producer, t);

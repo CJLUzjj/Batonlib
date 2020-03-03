@@ -1,10 +1,11 @@
 #ifndef __COROUTINE_H__
 #define __COROUTINE_H__
 #include "co_context.h"
+#include <functional>
 
 using namespace std;
 
-typedef void*(*coroutine_func)(void*);
+typedef function<void*(void*)> coroutine_func;
 
 class co_stack;
 class scheduler;
