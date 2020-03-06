@@ -1,6 +1,7 @@
 #ifndef CHANNEL_H
 #define CHANNEL_H
 #include <queue>
+#include <utility>
 #include "co_condition.h"
 #include "scheduler.h"
 #include "base/Mutex.h"
@@ -30,7 +31,8 @@ public:
     channel(scheduler* sch, int cap);
     ~channel();
 
-    bool put(T val);
+    bool put(T&& val);
+    bool put(const T& val);
     bool get(T& val);
     bool isfull(){return cap_ == size_;}
     bool isempty(){return size_ == 0;}
@@ -98,7 +100,30 @@ channel<T>::~channel()
 }
 
 template<class T>
-bool channel<T>::put(T val)
+bool channel<T>::put(T&& val)
+{
+    if(close_)return false;
+
+    while(size_ == cap_){
+        is_yield_ = true;
+        full_->co_cond_wait();
+        if(close_)
+            return false;
+    }
+
+    is_yield_ = false;
+
+    queue_.push(move(val));
+
+    size_++;
+    
+    empty_->co_cond_signal();
+
+    return true;
+}
+
+template<class T>
+bool channel<T>::put(const T& val)
 {
     if(close_)return false;
 
@@ -135,8 +160,7 @@ bool channel<T>::get(T& val)
     is_yield_ = false;
 
     //这里或许可以用std::move来优化拷贝
-    T temp = queue_.front();
-    val = temp;
+    val = move(queue_.front());
     queue_.pop();
     size_--;
 
