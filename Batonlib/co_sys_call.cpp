@@ -61,7 +61,35 @@ int co_accept(int fd, struct sockaddr* address, socklen_t* address_len)
 
 int co_connect(int fd, const struct sockaddr* address, socklen_t address_len)
 {
+    int ret = connect(fd, address, address_len);
 
+    if(ret == 0)return ret;
+
+    if(!(ret < 0 && errno == EINPROGRESS))return ret;
+
+    bool timeout = false;
+
+    for(int i = 0; i < 3; i++){//时间轮最大只能等60秒
+        timeout = co_register(fd, EPOLLIN|EPOLLOUT, 25000);
+        if(!timeout)
+            break;
+    }
+    if(timeout){
+        errno = ETIMEDOUT;
+        return TIME_OUT;
+    }
+
+    int error = 1;
+    socklen_t len;
+    ret = getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &len);
+    if(ret < 0){
+        return -1;
+    }
+    if(error){
+        errno = error;
+        return -1;
+    }
+    return 0;
 }
 
 int co_close(int fd)
