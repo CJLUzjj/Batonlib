@@ -1,12 +1,15 @@
-all:chat.test cond.test echo_conn.test coroutine.test echo.test time.test co_chat.test http.test local.test
+all:chat.test cond.test echo_conn.test coroutine.test echo.test time.test co_chat.test http.test local.test stackless.test
 
-OBJS = time_wheel.o tool.o co_context.o co_epoll.o co_stack.o coroutine.o scheduler.o context_swap.o co_sys_call.o co_condition.o
+OBJS = time_wheel.o tool.o co_context.o co_epoll.o co_stack.o coroutine.o scheduler.o context_swap.o co_sys_call.o co_condition.o coroutine_stackless.o
 BASEOBJS = Mutex.o Condition.o CountDownLatch.o Thread.o ThreadPool.o CurrentThread.o AppendFile.o AsyncLogging.o LogFile.o Logging.o LogStream.o
 NETOBJS = connection.o server.o
 TEST_O = Zchat_test.o
 TEST_CPP = Zchat_test.cpp
 GPP = g++ -std=c++11 -g -c
 
+
+stackless.test : Zstackless_test.o $(BASEOBJS) $(OBJS) $(NETOBJS)
+		g++ -lpthread Zstackless_test.o $(BASEOBJS) $(OBJS) $(NETOBJS) -o stackless.test
 
 local.test : Zco_local.o $(BASEOBJS) $(OBJS) $(NETOBJS)
 		g++ -lpthread Zco_local.o $(BASEOBJS) $(OBJS) $(NETOBJS) -o local.test
@@ -34,6 +37,9 @@ echo.test : Zecho_test.o $(BASEOBJS) $(OBJS) $(NETOBJS)
 
 time.test : Ztime_test.o $(BASEOBJS) $(OBJS) $(NETOBJS)
 		g++ -lpthread Ztime_test.o $(BASEOBJS) $(OBJS) $(NETOBJS) -o time.test
+
+Zstackless_test.o : Zstackless_test.cpp
+		$(GPP) Zstackless_test.cpp
 
 Zco_local.o : Zco_local.cpp
 		$(GPP) Zco_local.cpp
@@ -93,6 +99,9 @@ co_sys_call.o : co_sys_call.cpp
 
 co_condition.o : co_condition.cpp
 		$(GPP) co_condition.cpp
+
+coroutine_stackless.o : coroutine_stackless.cpp
+		$(GPP) coroutine_stackless.cpp
 
 
 
