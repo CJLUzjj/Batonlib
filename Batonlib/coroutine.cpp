@@ -44,7 +44,7 @@ coroutine::coroutine(scheduler* sch, int stack_size, coroutine_func func, void* 
     start_(0),
     end_(0),
     ismain_(0),
-    cst_(new co_stack(stack_size)),
+    cst_(new co_stack(stack_size, false)),
     save_size_(0),
     save_buf_(NULL),
     conn_(NULL)

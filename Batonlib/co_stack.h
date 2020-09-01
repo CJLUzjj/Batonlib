@@ -11,7 +11,7 @@ public:
     char* stack_bp_;
     char* stack_sp_;
 public:
-    co_stack(unsigned int stack_size);
+    co_stack(unsigned int stack_size, bool protect_mode);
     ~co_stack();
 };
 
